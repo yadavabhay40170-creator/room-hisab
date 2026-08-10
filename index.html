@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>🏠 Room Hisab Pro</title>
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#142033;--muted:#718096;--primary:#5b5ce2;--primary2:#7c3aed;--ok:#10b981;--danger:#ef4444;--shadow:0 18px 45px #18223518}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0,#dfe7ff,transparent 35%),var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#0d1728,#253a66 55%,#5b5ce2);color:#fff;border-radius:0 0 34px 34px;padding:34px 20px 28px;box-shadow:0 20px 50px #10182740}
+.wrap{max-width:980px;margin:auto;padding:18px}.brand{font-size:29px;font-weight:900;letter-spacing:-.8px}.sub{opacity:.78;margin-top:5px}
+.card{background:#ffffffdd;backdrop-filter:blur(12px);border:1px solid #fff;border-radius:24px;padding:20px;box-shadow:var(--shadow);margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{padding:20px;border-radius:22px;background:linear-gradient(145deg,#fff,#f4f7fb);box-shadow:0 10px 30px #1a254010}.stat b{display:block;font-size:28px;margin-top:8px}.muted{color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow:auto;margin:18px 0}.tabs button{white-space:nowrap;border:0;border-radius:15px;padding:12px 17px;background:#e7eaf0;font-weight:800;color:#243047}.tabs button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:white}
+input,select{width:100%;padding:13px 14px;border:1px solid #d8dee9;border-radius:13px;background:#fff;font-size:15px;outline:none}label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+button{cursor:pointer}.btn{border:0;border-radius:13px;padding:12px 16px;font-weight:800}.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}.danger{background:#fee2e2;color:#b91c1c}.ghost{background:#eef1f6;color:#27344b}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.list{display:grid;gap:10px}.item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px;border:1px solid #e6eaf0;border-radius:16px;background:#fff}.badge{padding:6px 10px;border-radius:99px;font-size:12px;font-weight:900;background:#dcfce7;color:#15803d}.away{background:#fff1d8;color:#a16207}.hidden{display:none!important}.login{max-width:430px;margin:70px auto}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#101827;color:#fff;padding:13px 18px;border-radius:14px;display:none;z-index:20}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid #e8ebf0;font-size:14px}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.row{flex-direction:column}.row>*{width:100%}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">🏠 Room Hisab Pro</div><div class="sub">Live • Shared • Professional</div></div></header>
+
+<main class="wrap">
+<section id="loginView" class="login card">
+  <h2>🔐 Login</h2>
+  <p class="muted">Email/password से login करें। Admin को automatically Admin Dashboard मिलेगा.</p>
+  <label>Email</label><input id="email" type="email" autocomplete="username" placeholder="Email">
+  <label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
+  <button class="btn primary" style="width:100%;margin-top:15px" onclick="login()">Login</button>
+  <button class="btn ghost" style="width:100%;margin-top:9px" onclick="resetPassword()">Forgot password?</button>
+  <p class="muted" style="font-size:12px">Mobile-number login को बाद में Firebase Phone Authentication से enable किया जा सकता है.</p>
+</section>
+
+<section id="appView" class="hidden">
+  <div class="row" style="margin-top:10px">
+    <div><h2 id="welcome">Dashboard</h2><div class="muted" id="roleText"></div></div>
+    <button class="btn ghost" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="grid">
+    <div class="stat">💰 Total Expense<b id="total">₹0</b></div>
+    <div class="stat">🍲 Food Bill<b id="food">₹0</b></div>
+    <div class="stat">👥 In Room<b id="inRoom">0</b></div>
+    <div class="stat">✈️ Away<b id="away">0</b></div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
+    <button onclick="showTab('purchases',this)">🛒 Purchases</button>
+    <button onclick="showTab('awayTab',this)">🏠 Away Days</button>
+    <button id="membersTab" onclick="showTab('members',this)">👥 Members</button>
+    <button id="adminTab" onclick="showTab('admin',this)">👑 Admin</button>
+  </div>
+
+  <section id="dashboard" class="card">
+    <h3>⚡ Live Status</h3>
+    <div class="list">
+      <div class="item"><span>👥 Room members</span><span class="badge">LIVE</span></div>
+      <div class="item"><span>🛒 Purchases</span><span class="badge">SYNC</span></div>
+      <div class="item"><span>🏠 Away dates</span><span class="badge away">TRACKED</span></div>
+    </div>
+  </section>
+
+  <section id="purchases" class="card hidden">
+    <h3>🛒 Add Purchase</h3>
+    <div class="row">
+      <div><label>Item</label><input id="pItem" placeholder="जैसे दूध, सब्जी"></div>
+      <div><label>Amount ₹</label><input id="pAmount" type="number" min="0"></div>
+    </div>
+    <label>Category</label><select id="pCat"><option value="food">Food</option><option value="other">Other</option></select>
+    <button class="btn primary" style="margin-top:14px" onclick="addPurchase()">➕ Add Purchase</button>
+    <h3>Recent Purchases</h3><div id="purchaseList" class="list"></div>
+  </section>
+
+  <section id="awayTab" class="card hidden">
+    <h3>🏠 Away Days</h3>
+    <p class="muted">घर जाने पर start/end date डालें। हिसाब में उन दिनों का share घटाने के लिए data उपलब्ध रहेगा.</p>
+    <div class="row">
+      <div><label>Start date</label><input id="aStart" type="date"></div>
+      <div><label>End date</label><input id="aEnd" type="date"></div>
+    </div>
+    <button class="btn primary" style="margin-top:14px" onclick="addAway()">📅 Save Away Period</button>
+    <div id="awayList" class="list" style="margin-top:14px"></div>
+  </section>
+
+  <section id="members" class="card hidden">
+    <h3>👥 Members</h3>
+    <div id="memberList" class="list"></div>
+  </section>
+
+  <section id="admin" class="card hidden">
+    <h3>👑 Admin Controls</h3>
+    <p class="muted">Admin members को add/edit/disable कर सकता है और purchases manage कर सकता है. Authentication password Firebase में manage होता है.</p>
+    <div class="row">
+      <div><label>Member UID</label><input id="mUid" placeholder="Firebase UID"></div>
+      <div><label>Name</label><input id="mName" placeholder="Member name"></div>
+    </div>
+    <label>Role</label><select id="mRole"><option value="member">member</option><option value="admin">admin</option></select>
+    <button class="btn primary" style="margin-top:14px" onclick="saveMember()">💾 Save Member</button>
+    <p style="font-size:12px;color:#b45309">नोट: नया Authentication account बनाने के लिए Firebase Console का Add user इस्तेमाल करें. Client-side website किसी user का password सीधे नहीं बनाती/पढ़ती.</p>
+  </section>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,sendPasswordResetEmail,signOut} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,collection,addDoc,deleteDoc,onSnapshot,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+/* ============================================================
+   PASTE YOUR FIREBASE WEB APP CONFIG HERE.
+   Firebase Console -> Project settings -> Your apps -> Web app
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAvSImfwIFWsSG2R133F_caWdnaE0cyMvE",
+  authDomain: "room-hisab-90d8f.firebaseapp.com",
+  projectId: "room-hisab-90d8f",
+  storageBucket: "room-hisab-90d8f.firebasestorage.app",
+  messagingSenderId: "163208201652",
+  appId: "1:163208201652:web:248458d711cd39a726dee1",
+  measurementId: "G-8H0QSQ2DN4"
+};
+
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+let me=null,isAdmin=false,unsubs=[];
+
+const $=id=>document.getElementById(id);
+const money=n=>"₹"+Number(n||0).toLocaleString("en-IN");
+function toast(s){const t=$("toast");t.textContent=s;t.style.display="block";setTimeout(()=>t.style.display="none",2600)}
+function clearSubs(){unsubs.forEach(x=>x&&x());unsubs=[]}
+
+window.login=async()=>{
+ try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);toast("Login successful")}
+ catch(e){toast("Login failed: "+(e.code||e.message))}
+};
+window.resetPassword=async()=>{
+ const e=$("email").value.trim(); if(!e)return toast("पहले Email डालें");
+ try{await sendPasswordResetEmail(auth,e);toast("Password reset email भेज दिया")}
+ catch(e){toast("Reset failed: "+(e.code||e.message))}
+};
+window.logout=()=>signOut(auth);
+
+onAuthStateChanged(auth,async user=>{
+ clearSubs(); me=user;
+ if(!user){$("loginView").classList.remove("hidden");$("appView").classList.add("hidden");return}
+ const snap=await getDoc(doc(db,"users",user.uid));
+ isAdmin=snap.exists() && snap.data().role==="admin";
+ $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");
+ $("welcome").textContent="🏠 "+(snap.data()?.name||user.email?.split("@")[0]||"Member");
+ $("roleText").textContent=isAdmin?"👑 Administrator":"👤 Room Member";
+ $("adminTab").classList.toggle("hidden",!isAdmin);$("membersTab").classList.toggle("hidden",!isAdmin);
+ startLive();
+});
+
+function startLive(){
+ const pQ=query(collection(db,"purchases"),orderBy("createdAt","desc"));
+ unsubs.push(onSnapshot(pQ,s=>{
+   let total=0,food=0,arr=[];s.forEach(d=>{let x={id:d.id,...d.data()};total+=Number(x.amount||0);if(x.category==="food")food+=Number(x.amount||0);arr.push(x)});
+   $("total").textContent=money(total);$("food").textContent=money(food);
+   $("purchaseList").innerHTML=arr.map(x=>`<div class="item"><div><b>${esc(x.item||"Item")}</b><div class="muted">${esc(x.byName||x.by||"")} • ${esc(x.category||"other")}</div></div><div class="row" style="max-width:170px"><b>${money(x.amount)}</b>${isAdmin||x.by===me?.uid?`<button class="btn danger" onclick="removePurchase('${x.id}')">Delete</button>`:""}</div></div>`).join("")||'<div class="muted">No purchases yet.</div>';
+ }));
+ const aQ=query(collection(db,"awayPeriods"),orderBy("start","desc"));
+ unsubs.push(onSnapshot(aQ,s=>{
+   let n=0;let arr=[];s.forEach(d=>{let x={id:d.id,...d.data()};arr.push(x);n++});
+   $("away").textContent=n;$("awayList").innerHTML=arr.map(x=>`<div class="item"><span>👤 ${esc(x.name||x.uid||"Member")}<br><small>${esc(x.start)} → ${esc(x.end)}</small></span>${isAdmin||x.uid===me?.uid?`<button class="btn danger" onclick="removeAway('${x.id}')">Delete</button>`:""}</div>`).join("")||'<div class="muted">No away periods.</div>';
+ }));
+ const uQ=collection(db,"users");
+ unsubs.push(onSnapshot(uQ,s=>{
+   let inRoom=0,arr=[];s.forEach(d=>{let x={uid:d.id,...d.data()};arr.push(x);if(!x.away)inRoom++});
+   $("inRoom").textContent=inRoom;
+   $("memberList").innerHTML=arr.map(x=>`<div class="item"><span><b>${esc(x.name||"Unnamed")}</b><br><small>${esc(x.email||"")} • ${esc(x.role||"member")}</small></span>${isAdmin?`<button class="btn ghost" onclick="editMember('${x.uid}','${esc(x.name||"")}','${esc(x.role||"member")}')">Edit</button>`:""}</div>`).join("");
+ }));
+}
+window.addPurchase=async()=>{
+ const item=$("pItem").value.trim(),amount=Number($("pAmount").value);
+ if(!item||!amount)return toast("Item और amount भरें");
+ await addDoc(collection(db,"purchases"),{item,amount,category:$("pCat").value,by:me.uid,byName:me.email,createdAt:serverTimestamp()});
+ $("pItem").value="";$("pAmount").value="";toast("Purchase added");
+};
+window.removePurchase=async id=>{if(confirm("Purchase delete करें?")){await deleteDoc(doc(db,"purchases",id));toast("Deleted")}};
+window.addAway=async()=>{
+ const start=$("aStart").value,end=$("aEnd").value;if(!start||!end)return toast("दोनों dates भरें");
+ await addDoc(collection(db,"awayPeriods"),{uid:me.uid,name:me.email,start,end,createdAt:serverTimestamp()});toast("Away period saved");
+};
+window.removeAway=async id=>{if(confirm("Away record delete करें?")){await deleteDoc(doc(db,"awayPeriods",id));toast("Deleted")}};
+
+window.saveMember=async()=>{
+ if(!isAdmin)return toast("Admin only");
+ const uid=$("mUid").value.trim(),name=$("mName").value.trim(),role=$("mRole").value;
+ if(!uid||!name)return toast("UID और name भरें");
+ await setDoc(doc(db,"users",uid),{name,role},{merge:true});toast("Member saved");
+};
+window.editMember=(uid,name,role)=>{$("mUid").value=uid;$("mName").value=name;$("mRole").value=role;showTab("admin",$("adminTab"))};
+window.showTab=(id,btn)=>{
+ document.querySelectorAll("#appView>section.card").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");
+ document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active");
+};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+</script>
+</body>
+</html>
